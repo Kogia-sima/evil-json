@@ -46,38 +46,47 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     type SerializeStruct = MapSerializer<'a, W, S>;
     type SerializeStructVariant = MapSerializer<'a, W, S>;
 
+    #[inline]
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
@@ -90,11 +99,13 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
         let v = tri!(FiniteF32::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
         let v = tri!(FiniteF64::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
@@ -117,15 +128,18 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         }
     }
 
+    #[inline]
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
         // TODO: specialize for byte sequence
         ser::Serialize::serialize(v, self)
     }
 
+    #[inline]
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
         self.serialize_unit()
     }
 
+    #[inline]
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ser::Serialize,
@@ -133,14 +147,17 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         value.serialize(self)
     }
 
+    #[inline]
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
         imap!(self.writer.write2(&RawStr("null"), &RawStr(S::SUFFIX)))
     }
 
+    #[inline]
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
         self.serialize_unit()
     }
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_unit_variant(
         self,
         _name: &'static str,
@@ -163,6 +180,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         }
     }
 
+    #[inline]
     fn serialize_newtype_struct<T: ?Sized>(
         self,
         _name: &'static str,
@@ -174,6 +192,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         value.serialize(self)
     }
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_newtype_variant<T: ?Sized>(
         self,
         _name: &'static str,
@@ -231,6 +250,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         })
     }
 
+    #[inline]
     fn serialize_tuple_struct(
         self,
         _name: &'static str,
@@ -239,6 +259,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         <Self as ser::Serializer>::serialize_tuple(self, len)
     }
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_tuple_variant(
         self,
         _name: &'static str,
@@ -304,6 +325,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         })
     }
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_struct_variant(
         self,
         _name: &'static str,
@@ -376,6 +398,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for SeqSerializer<'w, W, S>
     type Ok = ();
     type Error = Error;
 
+    #[inline]
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
@@ -399,6 +422,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for SeqSerializer<'w,
     type Ok = ();
     type Error = Error;
 
+    #[inline]
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
@@ -407,6 +431,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for SeqSerializer<'w,
         value.serialize(&mut self.inner)
     }
 
+    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeTuple>::end(self)
     }
@@ -424,6 +449,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for SeqSerializer<'w
         value.serialize(&mut self.inner)
     }
 
+    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeTuple>::end(self)
     }
@@ -433,6 +459,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeSeq for SeqSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
+    #[inline]
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
@@ -441,6 +468,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeSeq for SeqSerializer<'w, W, S> {
         value.serialize(&mut self.inner)
     }
 
+    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeTuple>::end(self)
     }
@@ -457,6 +485,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for MapSerializer<'w, W, S
     type Ok = ();
     type Error = Error;
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_field<T: ?Sized>(
         &mut self,
         key: &'static str,
@@ -496,6 +525,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for MapSerializer<'
     type Ok = ();
     type Error = Error;
 
+    #[cfg_attr(not(debug_assertions), inline(always))]
     fn serialize_field<T: ?Sized>(
         &mut self,
         key: &'static str,
@@ -507,6 +537,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for MapSerializer<'
         <Self as ser::SerializeStruct>::serialize_field(self, key, value)
     }
 
+    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeStruct>::end(self)
     }
@@ -516,6 +547,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
+    #[inline]
     fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
@@ -525,6 +557,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
         })
     }
 
+    #[inline]
     fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: ser::Serialize,
@@ -532,6 +565,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
         value.serialize(&mut self.inner)
     }
 
+    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeStruct>::end(self)
     }

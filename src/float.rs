@@ -22,6 +22,7 @@ macro_rules! finite_float {
         impl FiniteFloat for $name {
             const MAX_LEN: usize = $max_len;
 
+            #[inline]
             unsafe fn write_to(self, dst: *mut u8) -> usize {
                 ryu::raw::$formatter(self.0, dst)
             }
