@@ -19,6 +19,3 @@ simd-json = "0.3.24"
 [[bench]]
 name = "all"
 harness = false
-
-[profile.bench]
-codegen-units = 1
