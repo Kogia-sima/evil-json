@@ -12,7 +12,10 @@ edition = "2018"
 
 [workspace]
 members = [
-  "evil-json-bench"
+  "evil-json-bench",
+]
+exclude = [
+  "evil-json-dev",
 ]
 
 [features]

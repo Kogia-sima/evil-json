@@ -2,3 +2,5 @@
 Cargo.lock
 *.log
 *.s
+
+/evil-json-dev/
