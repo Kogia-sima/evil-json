@@ -10,6 +10,11 @@ readme = "README.md"
 license = "MIT-0"
 edition = "2018"
 
+[workspace]
+members = [
+  "evil-json-bench"
+]
+
 [features]
 default = ["std"]
 # no_std environment is not supported now. Do not disable this feature flag
