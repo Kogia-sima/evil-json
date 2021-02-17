@@ -238,14 +238,17 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
-        let first = len == 0;
-        self.writer.write_all(b"[")?;
+        if len != 0 {
+            self.writer.write_all(b"[")?;
+        } else {
+            self.writer.write2(&RawStr("[]"), &RawStr(S::SUFFIX))?;
+        }
         Ok(TupleSerializer {
             inner: Serializer::<'a, W, SeqSuffix> {
                 writer: self.writer,
                 _suffix: PhantomData,
             },
-            first,
+            first: len == 0,
             _suffix: PhantomData,
         })
     }
@@ -268,14 +271,21 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         if !need_escape(variant) {
-            self.writer
-                .write3(&RawStr("\""), &RawStr(variant), &RawStr("\":["))?;
+            if len != 0 {
+                self.writer
+                    .write3(&RawStr("\""), &RawStr(variant), &RawStr("\":["))?;
+            } else {
+                self.writer
+                    .write4(&RawStr("\""), &RawStr(variant), &RawStr("\":[]"), &RawStr(S::SUFFIX))?;
+            }
         } else {
             self.writer.write_all(b"\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
-                    if !S::SUFFIX.is_empty() {
-                        self.writer.write_all(b"\":[")?
+                    if len != 0 {
+                        self.writer.write_all(b"\":[")?;
+                    } else {
+                        self.writer.write2(&RawStr("\":[]"), &RawStr(S::SUFFIX))?;
                     }
                 }
                 Err(e) => return Err(Error::Io(e)),
@@ -403,7 +413,6 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for TupleSerializer<'w, W, 
     where
         T: ser::Serialize,
     {
-        self.first = false;
         value.serialize(&mut self.inner)
     }
 
@@ -412,9 +421,11 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for TupleSerializer<'w, W, 
             unsafe {
                 self.inner.writer.shrink(SeqSuffix::SUFFIX.len());
             }
-        }
 
-        imap!(self.inner.writer.write2(&RawStr("]"), &RawStr(S::SUFFIX)))
+            imap!(self.inner.writer.write2(&RawStr("]"), &RawStr(S::SUFFIX)))
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -427,7 +438,6 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for TupleSerializer<'
     where
         T: ser::Serialize,
     {
-        self.first = false;
         value.serialize(&mut self.inner)
     }
 
@@ -445,7 +455,6 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for TupleSerializer<
     where
         T: ser::Serialize,
     {
-        self.first = false;
         value.serialize(&mut self.inner)
     }
 
