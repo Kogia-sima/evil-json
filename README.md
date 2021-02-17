@@ -3,6 +3,7 @@
   <p>Experimental JSON Serializer</p>
   <p>
     <img alt="Version" src="https://img.shields.io/badge/version-0.1.0--alpha.0-blue.svg?cacheSeconds=2592000" />
+    <img alt="Tests" src="https://github.com/Kogia-sima/evil-json/workflows/Tests/badge.svg" />
     <a href="https://github.com/Kogia-sima/evil-json/blob/master/LICENSE" target="_blank">
       <img alt="License: MIT-0" src="https://img.shields.io/badge/License-MIT--0-yellow.svg" />
     </a>
