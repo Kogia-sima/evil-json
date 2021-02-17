@@ -165,12 +165,13 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
         if !need_escape(variant) {
-            imap!(self.writer.write2(&RawStr(variant), &RawStr(S::SUFFIX)))
+            imap!(self.writer.write4(&RawStr("\""), &RawStr(variant), &RawStr("\""), &RawStr(S::SUFFIX)))
         } else {
+            self.writer.write_all(b"\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
                     if !S::SUFFIX.is_empty() {
-                        imap!(self.writer.write_all(S::SUFFIX.as_bytes()))
+                        imap!(self.writer.write2(&RawStr("\""), &RawStr(S::SUFFIX)))
                     } else {
                         Ok(())
                     }
@@ -205,9 +206,9 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     {
         if !need_escape(variant) {
             self.writer
-                .write3(&RawStr("\""), &RawStr(variant), &RawStr("\":"))?;
+                .write3(&RawStr("{\""), &RawStr(variant), &RawStr("\":"))?;
         } else {
-            self.writer.write_all(b"\"")?;
+            self.writer.write_all(b"{\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
                     if !S::SUFFIX.is_empty() {
@@ -218,7 +219,8 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             }
         }
 
-        value.serialize(self)
+        tri!(value.serialize(&mut Serializer { writer: self.writer, _suffix: PhantomData::<RootSuffix> }));
+        imap!(self.writer.write2(&RawStr("}"), &RawStr(S::SUFFIX)))
     }
 
     fn serialize_seq(
@@ -273,10 +275,10 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         if !need_escape(variant) {
             if len != 0 {
                 self.writer
-                    .write3(&RawStr("\""), &RawStr(variant), &RawStr("\":["))?;
+                    .write3(&RawStr("{\""), &RawStr(variant), &RawStr("\":["))?;
             } else {
                 self.writer
-                    .write4(&RawStr("\""), &RawStr(variant), &RawStr("\":[]"), &RawStr(S::SUFFIX))?;
+                    .write4(&RawStr("{\""), &RawStr(variant), &RawStr("\":[]"), &RawStr(S::SUFFIX))?;
             }
         } else {
             self.writer.write_all(b"\"")?;
@@ -345,14 +347,12 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         if !need_escape(variant) {
             self.writer
-                .write3(&RawStr("\""), &RawStr(variant), &RawStr("\":{\""))?;
+                .write3(&RawStr("{\""), &RawStr(variant), &RawStr("\":{\""))?;
         } else {
-            self.writer.write_all(b"\"")?;
+            self.writer.write_all(b"{\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
-                    if !S::SUFFIX.is_empty() {
-                        self.writer.write_all(b"\":{\"")?
-                    }
+                    self.writer.write_all(b"\":{\"")?;
                 }
                 Err(e) => return Err(Error::Io(e)),
             }
@@ -458,9 +458,16 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for TupleSerializer<
         value.serialize(&mut self.inner)
     }
 
-    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        <Self as ser::SerializeTuple>::end(self)
+        if likely!(!self.first) {
+            unsafe {
+                self.inner.writer.shrink(SeqSuffix::SUFFIX.len());
+            }
+
+            imap!(self.inner.writer.write2(&RawStr("]}"), &RawStr(S::SUFFIX)))
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -574,9 +581,14 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant
         <Self as ser::SerializeStruct>::serialize_field(self, key, value)
     }
 
-    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        <Self as ser::SerializeStruct>::end(self)
+        unsafe {
+            self.inner
+                .writer
+                .shrink(MapSuffix::SUFFIX.len() - self.first as usize);
+        }
+
+        imap!(self.inner.writer.write2(&RawStr("}}"), &RawStr(S::SUFFIX)))
     }
 }
 
