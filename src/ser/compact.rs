@@ -170,11 +170,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             self.writer.write_all(b"\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
-                    if !S::SUFFIX.is_empty() {
-                        imap!(self.writer.write2(&RawStr("\""), &RawStr(S::SUFFIX)))
-                    } else {
-                        Ok(())
-                    }
+                    imap!(self.writer.write2(&RawStr("\""), &RawStr(S::SUFFIX)))
                 }
                 Err(e) => Err(Error::Io(e)),
             }
@@ -211,9 +207,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             self.writer.write_all(b"{\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
-                    if !S::SUFFIX.is_empty() {
-                        self.writer.write_all(b"\":")?
-                    }
+                    self.writer.write_all(b"\":")?;
                 }
                 Err(e) => return Err(Error::Io(e)),
             }
@@ -278,16 +272,16 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
                     .write3(&RawStr("{\""), &RawStr(variant), &RawStr("\":["))?;
             } else {
                 self.writer
-                    .write4(&RawStr("{\""), &RawStr(variant), &RawStr("\":[]"), &RawStr(S::SUFFIX))?;
+                    .write4(&RawStr("{\""), &RawStr(variant), &RawStr("\":[]}"), &RawStr(S::SUFFIX))?;
             }
         } else {
-            self.writer.write_all(b"\"")?;
+            self.writer.write_all(b"{\"")?;
             match escape_cold(self.writer, variant) {
                 Ok(_) => {
                     if len != 0 {
                         self.writer.write_all(b"\":[")?;
                     } else {
-                        self.writer.write2(&RawStr("\":[]"), &RawStr(S::SUFFIX))?;
+                        self.writer.write2(&RawStr("\":[]}"), &RawStr(S::SUFFIX))?;
                     }
                 }
                 Err(e) => return Err(Error::Io(e)),
@@ -527,9 +521,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for StructSerializer<'w, W
         } else {
             match escape_cold(self.inner.writer, key) {
                 Ok(_) => {
-                    if !S::SUFFIX.is_empty() {
-                        self.inner.writer.write_all(b"\":")?;
-                    }
+                    self.inner.writer.write_all(b"\":")?;
                 }
                 Err(e) => return Err(Error::Io(e)),
             }
