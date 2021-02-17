@@ -15,24 +15,30 @@
 
 ```console
 citm_catalog.json/serde-json
-                        time:   [1.6274 ms 1.6318 ms 1.6365 ms]
-                        thrpt:  [291.54 MiB/s 292.40 MiB/s 293.18 MiB/s]
+                        time:   [1.4850 ms 1.4881 ms 1.4916 ms]
+                        thrpt:  [319.86 MiB/s 320.62 MiB/s 321.29 MiB/s]
 citm_catalog.json/simd-json
-                        time:   [1.2735 ms 1.2778 ms 1.2830 ms]
-                        thrpt:  [371.44 MiB/s 372.94 MiB/s 374.22 MiB/s]
+                        time:   [1.2758 ms 1.2790 ms 1.2828 ms]
+                        thrpt:  [371.50 MiB/s 372.59 MiB/s 373.55 MiB/s]
+citm_catalog.json/simd-json-derive
+                        time:   [554.66 us 556.49 us 558.58 us]
+                        thrpt:  [854.17 MiB/s 857.37 MiB/s 860.21 MiB/s]
 citm_catalog.json/evil-json
-                        time:   [373.71 us 374.81 us 376.17 us]
-                        thrpt:  [1.2386 GiB/s 1.2431 GiB/s 1.2468 GiB/s]
+                        time:   [366.31 us 367.94 us 369.93 us]
+                        thrpt:  [1.2595 GiB/s 1.2664 GiB/s 1.2720 GiB/s]
 
 twitter.json/serde-json
-                        time:   [1.1918 ms 1.1955 ms 1.1998 ms]
-                        thrpt:  [379.71 MiB/s 381.06 MiB/s 382.25 MiB/s]
+                        time:   [1.0518 ms 1.0556 ms 1.0602 ms]
+                        thrpt:  [428.86 MiB/s 430.72 MiB/s 432.29 MiB/s]
 twitter.json/simd-json
-                        time:   [955.47 us 959.51 us 963.87 us]
-                        thrpt:  [472.67 MiB/s 474.82 MiB/s 476.82 MiB/s]
+                        time:   [907.32 us 910.34 us 913.72 us]
+                        thrpt:  [497.62 MiB/s 499.47 MiB/s 501.13 MiB/s]
+twitter.json/simd-json-derive
+                        time:   [846.42 us 849.35 us 852.67 us]
+                        thrpt:  [534.29 MiB/s 536.38 MiB/s 538.24 MiB/s]
 twitter.json/evil-json
-                        time:   [411.54 us 413.36 us 415.51 us]
-                        thrpt:  [1.0707 GiB/s 1.0763 GiB/s 1.0811 GiB/s]
+                        time:   [404.72 us 407.50 us 410.75 us]
+                        thrpt:  [1.0810 GiB/s 1.0896 GiB/s 1.0971 GiB/s]
 ```
 
 ## Author
