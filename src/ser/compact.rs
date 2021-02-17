@@ -43,8 +43,8 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     type SerializeTupleStruct = SeqSerializer<'a, W, S>;
     type SerializeTupleVariant = SeqSerializer<'a, W, S>;
     type SerializeMap = MapSerializer<'a, W, S>;
-    type SerializeStruct = MapSerializer<'a, W, S>;
-    type SerializeStructVariant = MapSerializer<'a, W, S>;
+    type SerializeStruct = StructSerializer<'a, W, S>;
+    type SerializeStructVariant = StructSerializer<'a, W, S>;
 
     #[inline]
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
@@ -315,7 +315,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     ) -> Result<Self::SerializeStruct, Self::Error> {
         let first = len == 0;
         self.writer.write_all(b"{\"")?;
-        Ok(MapSerializer {
+        Ok(StructSerializer {
             inner: Serializer::<'a, W, MapSuffix> {
                 writer: self.writer,
                 _suffix: PhantomData,
@@ -348,7 +348,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             }
         }
 
-        Ok(MapSerializer {
+        Ok(StructSerializer {
             inner: Serializer::<'a, W, MapSuffix> {
                 writer: self.writer,
                 _suffix: PhantomData,
@@ -475,13 +475,13 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeSeq for SeqSerializer<'w, W, S> {
 }
 
 #[doc(hidden)]
-pub struct MapSerializer<'w, W: BufWrite, S: Suffix> {
+pub struct StructSerializer<'w, W: BufWrite, S: Suffix> {
     inner: Serializer<'w, W, MapSuffix>,
     first: bool,
     _suffix: PhantomData<S>,
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for MapSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for StructSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
@@ -521,7 +521,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for MapSerializer<'w, W, S
     }
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for MapSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for StructSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
@@ -541,6 +541,13 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for MapSerializer<'
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeStruct>::end(self)
     }
+}
+
+#[doc(hidden)]
+pub struct MapSerializer<'w, W: BufWrite, S: Suffix> {
+    inner: Serializer<'w, W, MapSuffix>,
+    first: bool,
+    _suffix: PhantomData<S>,
 }
 
 impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
@@ -565,9 +572,14 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
         value.serialize(&mut self.inner)
     }
 
-    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        <Self as ser::SerializeStruct>::end(self)
+        unsafe {
+            self.inner
+                .writer
+                .shrink(MapSuffix::SUFFIX.len() - self.first as usize);
+        }
+
+        imap!(self.inner.writer.write2(&RawStr("}"), &RawStr(S::SUFFIX)))
     }
 }
 
