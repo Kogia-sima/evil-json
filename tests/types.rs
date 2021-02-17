@@ -1,75 +1,80 @@
 use evil_json::Error;
 
+fn to_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
+    evil_json::to_string(value).unwrap()
+}
+
 #[test]
 fn null() {
-    assert_eq!(evil_json::to_string(&()).unwrap(), "null");
-    assert_eq!(evil_json::to_string(&Option::<u8>::None).unwrap(), "null");
+    assert_eq!(to_json(&()), "null");
+    assert_eq!(to_json(&Option::<u8>::None), "null");
 }
 
 #[test]
 fn integer() {
-    assert_eq!(evil_json::to_string(&false).unwrap(), "false");
-    assert_eq!(evil_json::to_string(&0u32).unwrap(), "0");
-    assert_eq!(evil_json::to_string(&u16::max_value()).unwrap(), "65535");
-    assert_eq!(evil_json::to_string(&-81_isize).unwrap(), "-81");
+    assert_eq!(to_json(&false), "false");
+    assert_eq!(to_json(&0u32), "0");
+    assert_eq!(to_json(&u16::max_value()), "65535");
+    assert_eq!(to_json(&-81_isize), "-81");
     assert_eq!(
-        evil_json::to_string(&u128::max_value()).unwrap(),
+        to_json(&u128::max_value()),
         "340282366920938463463374607431768211455"
     );
     assert_eq!(
-        evil_json::to_string(&i128::min_value()).unwrap(),
+        to_json(&i128::min_value()),
         "-170141183460469231731687303715884105728"
     );
 }
 
 #[test]
 fn float() {
-    assert_eq!(evil_json::to_string(&3.14f32).unwrap(), "3.14");
-    assert_eq!(evil_json::to_string(&-1e-21).unwrap(), "-1e-21");
-    assert_eq!(
-        evil_json::to_string(&2.718281828459045).unwrap(),
-        "2.718281828459045"
-    );
+    assert_eq!(to_json(&3.14f32), "3.14");
+    assert_eq!(to_json(&-0.0), "-0.0");
+    assert_eq!(to_json(&2.718281828459045), "2.718281828459045");
     assert!(matches!(
         evil_json::to_string(&f32::INFINITY),
         Err(Error::NonFiniteFloat)
     ));
     assert!(matches!(
-        evil_json::to_string(&f64::NAN),
+        evil_json::to_string(&f64::INFINITY),
         Err(Error::NonFiniteFloat)
     ));
 }
 
 #[test]
 fn char_no_escape() {
-    assert_eq!(evil_json::to_string(&'a').unwrap(), "\"a\"");
-    assert_eq!(evil_json::to_string(&'é').unwrap(), "\"é\"");
-    assert_eq!(evil_json::to_string(&'Ａ').unwrap(), "\"Ａ\"");
-    assert_eq!(evil_json::to_string(&'🄫').unwrap(), "\"🄫\"");
+    assert_eq!(to_json(&'a'), "\"a\"");
+    assert_eq!(to_json(&'é'), "\"é\"");
+    assert_eq!(to_json(&'Ａ'), "\"Ａ\"");
+    assert_eq!(to_json(&'🄫'), "\"🄫\"");
 }
 
 #[test]
 fn char_escape() {
-    assert_eq!(evil_json::to_string(&'\"').unwrap(), "\"\\\"\"");
-    assert_eq!(evil_json::to_string(&'\r').unwrap(), "\"\\r\"");
-    assert_eq!(evil_json::to_string(&'\\').unwrap(), "\"\\\\\"");
-    assert_eq!(evil_json::to_string(&'\x1f').unwrap(), "\"\\u001f\"");
+    assert_eq!(to_json(&'\"'), "\"\\\"\"");
+    assert_eq!(to_json(&'\r'), "\"\\r\"");
+    assert_eq!(to_json(&'\\'), "\"\\\\\"");
+    assert_eq!(to_json(&'\x1f'), "\"\\u001f\"");
 }
 
 #[test]
 fn string() {
-    assert_eq!(evil_json::to_string(&"").unwrap(), "\"\"");
-    assert_eq!(
-        evil_json::to_string(&"This is ascii text.").unwrap(),
-        "\"This is ascii text.\""
-    );
-    assert_eq!(evil_json::to_string(&"Καλιμέρα").unwrap(), "\"Καλιμέρα\"");
+    assert_eq!(to_json(&""), "\"\"");
+    assert_eq!(to_json(&"This is ascii text."), "\"This is ascii text.\"");
+    assert_eq!(to_json(&"Καλιμέρα"), "\"Καλιμέρα\"");
 }
 
 #[test]
 fn slice() {
-    assert_eq!(evil_json::to_string::<[u8; 0]>(&[]).unwrap(), "[]");
-    assert_eq!(evil_json::to_string(&[18782_i16]).unwrap(), "[18782]");
-    assert_eq!(evil_json::to_string(&["apple", "banana"]).unwrap(), "[\"apple\",\"banana\"]");
-    assert_eq!(evil_json::to_string(&b"\x03\x07\x01\x0a"[..]).unwrap(), "[3,7,1,10]");
+    assert_eq!(to_json::<[u8; 0]>(&[]), "[]");
+    assert_eq!(to_json(&[18782_i16]), "[18782]");
+    assert_eq!(to_json(&["apple", "banana"]), "[\"apple\",\"banana\"]");
+    assert_eq!(to_json(&b"\x03\x07\x01\x0a"[..]), "[3,7,1,10]");
+}
+
+#[test]
+fn tuple() {
+    assert_eq!(to_json(&(-1i8,)), "[-1]");
+    assert_eq!(to_json(&(9i64, "abc")), "[9,\"abc\"]");
+    assert_eq!(to_json(&(9i64, b"abc")), "[9,[97,98,99]]");
 }
