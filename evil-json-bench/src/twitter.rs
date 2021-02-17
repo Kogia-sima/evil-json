@@ -1,45 +1,43 @@
-use crate::common::{Color, Empty};
+use crate::common::{Color, Empty, PrimStr};
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Twitter<'a> {
-    #[serde(borrow)]
-    pub statuses: Vec<Status<'a>>,
-    #[serde(borrow)]
-    pub search_metadata: SearchMetadata<'a>,
+#[derive(simd_json_derive::Serialize)]
+pub struct Twitter {
+    pub statuses: Vec<Status>,
+    pub search_metadata: SearchMetadata,
 }
 
 pub type LongId = u64;
 pub type ShortId = u32;
+pub type LongIdStr = PrimStr<LongId>;
+pub type ShortIdStr = PrimStr<ShortId>;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Status<'a> {
+#[derive(simd_json_derive::Serialize)]
+pub struct Status {
     pub metadata: Metadata,
-    pub created_at: &'a str,
+    pub created_at: String,
     pub id: LongId,
-    pub id_str: &'a str,
+    pub id_str: LongIdStr,
     pub text: String,
     pub source: String,
     pub truncated: bool,
     pub in_reply_to_status_id: Option<LongId>,
-    pub in_reply_to_status_id_str: Option<&'a str>,
+    pub in_reply_to_status_id_str: Option<LongIdStr>,
     pub in_reply_to_user_id: Option<ShortId>,
-    pub in_reply_to_user_id_str: Option<&'a str>,
-    #[serde(borrow)]
-    pub in_reply_to_screen_name: Option<&'a str>,
-    #[serde(borrow)]
-    pub user: User<'a>,
+    pub in_reply_to_user_id_str: Option<ShortIdStr>,
+    pub in_reply_to_screen_name: Option<String>,
+    pub user: User,
     pub geo: (),
     pub coordinates: (),
     pub place: (),
     pub contributors: (),
-    #[serde(borrow)]
-    pub retweeted_status: Option<Box<Status<'a>>>,
+    pub retweeted_status: Option<Box<Status>>,
     pub retweet_count: u32,
     pub favorite_count: u32,
-    #[serde(borrow)]
-    pub entities: StatusEntities<'a>,
+    pub entities: StatusEntities,
     pub favorited: bool,
     pub retweeted: bool,
     pub possibly_sensitive: Option<bool>,
@@ -48,6 +46,7 @@ pub struct Status<'a> {
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(simd_json_derive::Serialize)]
 pub struct Metadata {
     pub result_type: ResultType,
     pub iso_language_code: LanguageCode,
@@ -55,26 +54,24 @@ pub struct Metadata {
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct User<'a> {
+#[derive(simd_json_derive::Serialize)]
+pub struct User {
     pub id: ShortId,
-    pub id_str: &'a str,
-    pub name: &'a str,
-    pub screen_name: &'a str,
-    pub location: &'a str,
+    pub id_str: ShortIdStr,
+    pub name: String,
+    pub screen_name: String,
+    pub location: String,
     pub description: String,
-    #[serde(borrow)]
-    pub url: Option<&'a str>,
-    #[serde(borrow)]
-    pub entities: UserEntities<'a>,
+    pub url: Option<String>,
+    pub entities: UserEntities,
     pub protected: bool,
     pub followers_count: u32,
     pub friends_count: u32,
     pub listed_count: u32,
-    pub created_at: &'a str,
+    pub created_at: String,
     pub favourites_count: u32,
     pub utc_offset: Option<i32>,
-    #[serde(borrow)]
-    pub time_zone: Option<&'a str>,
+    pub time_zone: Option<String>,
     pub geo_enabled: bool,
     pub verified: bool,
     pub statuses_count: u32,
@@ -83,13 +80,12 @@ pub struct User<'a> {
     pub is_translator: bool,
     pub is_translation_enabled: bool,
     pub profile_background_color: Color,
-    pub profile_background_image_url: &'a str,
-    pub profile_background_image_url_https: &'a str,
+    pub profile_background_image_url: String,
+    pub profile_background_image_url_https: String,
     pub profile_background_tile: bool,
-    pub profile_image_url: &'a str,
-    pub profile_image_url_https: &'a str,
-    #[serde(borrow)]
-    pub profile_banner_url: Option<&'a str>,
+    pub profile_image_url: String,
+    pub profile_image_url_https: String,
+    pub profile_banner_url: Option<String>,
     pub profile_link_color: Color,
     pub profile_sidebar_border_color: Color,
     pub profile_sidebar_fill_color: Color,
@@ -104,87 +100,88 @@ pub struct User<'a> {
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct UserEntities<'a> {
-    #[serde(borrow)]
-    pub url: Option<UserUrl<'a>>,
-    #[serde(borrow)]
-    pub description: UserEntitiesDescription<'a>,
+#[derive(simd_json_derive::Serialize)]
+pub struct UserEntities {
+    pub url: Option<UserUrl>,
+    pub description: UserEntitiesDescription,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct UserUrl<'a> {
-    #[serde(borrow)]
-    pub urls: Vec<Url<'a>>,
+#[derive(simd_json_derive::Serialize)]
+pub struct UserUrl {
+    pub urls: Vec<Url>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Url<'a> {
-    pub url: &'a str,
-    pub expanded_url: &'a str,
-    pub display_url: &'a str,
+#[derive(simd_json_derive::Serialize)]
+pub struct Url {
+    pub url: String,
+    pub expanded_url: String,
+    pub display_url: String,
     pub indices: Indices,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct UserEntitiesDescription<'a> {
-    #[serde(borrow)]
-    pub urls: Vec<Url<'a>>,
+#[derive(simd_json_derive::Serialize)]
+pub struct UserEntitiesDescription {
+    pub urls: Vec<Url>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct StatusEntities<'a> {
-    #[serde(borrow)]
-    pub hashtags: Vec<Hashtag<'a>>,
+#[derive(simd_json_derive::Serialize)]
+pub struct StatusEntities {
+    pub hashtags: Vec<Hashtag>,
     pub symbols: Empty,
-    #[serde(borrow)]
-    pub urls: Vec<Url<'a>>,
-    #[serde(borrow)]
-    pub user_mentions: Vec<UserMention<'a>>,
-    #[serde(borrow)]
-    pub media: Option<Vec<Media<'a>>>,
+    pub urls: Vec<Url>,
+    pub user_mentions: Vec<UserMention>,
+    pub media: Option<Vec<Media>>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Hashtag<'a> {
-    pub text: &'a str,
+#[derive(simd_json_derive::Serialize)]
+pub struct Hashtag {
+    pub text: String,
     pub indices: Indices,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct UserMention<'a> {
-    pub screen_name: &'a str,
-    pub name: &'a str,
+#[derive(simd_json_derive::Serialize)]
+pub struct UserMention {
+    pub screen_name: String,
+    pub name: String,
     pub id: ShortId,
-    pub id_str: &'a str,
+    pub id_str: ShortIdStr,
     pub indices: Indices,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Media<'a> {
+#[derive(simd_json_derive::Serialize)]
+pub struct Media {
     pub id: LongId,
-    pub id_str: &'a str,
+    pub id_str: LongIdStr,
     pub indices: Indices,
-    pub media_url: &'a str,
-    pub media_url_https: &'a str,
-    pub url: &'a str,
-    pub display_url: &'a str,
-    pub expanded_url: &'a str,
+    pub media_url: String,
+    pub media_url_https: String,
+    pub url: String,
+    pub display_url: String,
+    pub expanded_url: String,
     #[serde(rename = "type")]
-    pub media_type: &'a str,
+    pub media_type: String,
     pub sizes: Sizes,
     pub source_status_id: Option<LongId>,
-    pub source_status_id_str: Option<&'a str>,
+    pub source_status_id_str: Option<LongIdStr>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(simd_json_derive::Serialize)]
 pub struct Sizes {
     pub medium: Size,
     pub small: Size,
@@ -194,6 +191,7 @@ pub struct Sizes {
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(simd_json_derive::Serialize)]
 pub struct Size {
     pub w: u16,
     pub h: u16,
@@ -204,16 +202,17 @@ pub type Indices = (u8, u8);
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct SearchMetadata<'a> {
+#[derive(simd_json_derive::Serialize)]
+pub struct SearchMetadata {
     pub completed_in: f32,
     pub max_id: LongId,
-    pub max_id_str: &'a str,
-    pub next_results: &'a str,
-    pub query: &'a str,
-    pub refresh_url: &'a str,
+    pub max_id_str: LongIdStr,
+    pub next_results: String,
+    pub query: String,
+    pub refresh_url: String,
     pub count: u8,
     pub since_id: LongId,
-    pub since_id_str: &'a str,
+    pub since_id_str: LongIdStr,
 }
 
 enum_str!(Resize {

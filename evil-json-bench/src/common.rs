@@ -1,8 +1,10 @@
 use serde::ser::{Serialize, Serializer};
 use serde::de::{self, Deserialize, Deserializer, Unexpected};
-use std::fmt;
+use std::fmt::{self, Display};
 use std::mem::MaybeUninit;
-use std::{ptr, slice, str};
+use std::ptr;
+use std::slice;
+use std::str::{self, FromStr};
 
 #[derive(Clone, Copy)]
 pub struct Empty;
@@ -42,6 +44,14 @@ impl<'de> Deserialize<'de> for Empty {
     }
 }
 
+impl simd_json_derive::Serialize for Empty {
+    fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        writer.write_all(b"[]")
+    }
+}
 
 #[derive(Clone, Copy)]
 pub struct Color(u32);
@@ -115,6 +125,83 @@ impl<'de> Deserialize<'de> for Color {
     }
 }
 
+impl simd_json_derive::Serialize for Color {
+    fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut buf = MaybeUninit::uninit();
+        self.as_str(&mut buf).json_write(writer)
+    }
+}
+
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+pub struct PrimStr<T>(T);
+
+impl<T: Serialize> Serialize for PrimStr<T> {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        Serialize::serialize(&self.0, serializer)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for PrimStr<T>
+where
+    T: Copy + Ord + Display + FromStr,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use std::marker::PhantomData;
+        struct Visitor<T>(PhantomData<T>);
+
+        impl<'de, T> de::Visitor<'de> for Visitor<T>
+        where
+            T: Copy + Ord + Display + FromStr,
+        {
+            type Value = PrimStr<T>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("number represented as string")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<PrimStr<T>, E>
+            where
+                E: de::Error,
+            {
+                match T::from_str(value) {
+                    Ok(id) => Ok(PrimStr(id)),
+                    Err(_) => Err(E::invalid_value(Unexpected::Str(value), &self)),
+                }
+            }
+        }
+
+        deserializer.deserialize_str(Visitor(PhantomData))
+    }
+}
+
+impl<T: fmt::Display> simd_json_derive::Serialize for PrimStr<T> {
+    fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        write!(writer, r#""{}""#, self.0)
+    }
+}
+
+impl<T: fmt::Display> simd_json_derive::SerializeAsKey for PrimStr<T> {
+    fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        write!(writer, r#""{}""#, self.0)
+    }
+}
+
 macro_rules! enum_str {
     ($name:ident { $($variant:ident($str:expr), )* }) => {
         #[derive(Clone, Copy)]
@@ -162,6 +249,15 @@ macro_rules! enum_str {
                 }
 
                 deserializer.deserialize_str(Visitor)
+            }
+        }
+
+        impl ::simd_json_derive::Serialize for $name {
+            #[inline]
+            fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
+                where W: std::io::Write
+            {
+                self.as_str().json_write(writer)
             }
         }
     }

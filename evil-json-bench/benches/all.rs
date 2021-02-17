@@ -1,5 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 use evil_json_bench::{CitmCatalog, Twitter};
+use simd_json_derive::Serialize;
 use std::io;
 use std::path::Path;
 
@@ -35,6 +36,13 @@ fn citm_catalog(c: &mut Criterion) {
     });
 
     group.throughput(Throughput::Bytes(
+        citm_catalog.json_string().unwrap().len() as u64
+    ));
+    group.bench_function("simd-json-derive", |b| {
+        b.iter(|| citm_catalog.json_string())
+    });
+
+    group.throughput(Throughput::Bytes(
         evil_json::to_string(&citm_catalog).unwrap().len() as u64
     ));
     group.bench_function("evil-json", |b| {
@@ -64,6 +72,13 @@ fn twitter(c: &mut Criterion) {
     ));
     group.bench_function("simd-json", |b| {
         b.iter(|| simd_json::to_string(&twitter))
+    });
+
+    group.throughput(Throughput::Bytes(
+        twitter.json_string().unwrap().len() as u64
+    ));
+    group.bench_function("simd-json-derive", |b| {
+        b.iter(|| twitter.json_string())
     });
 
     group.throughput(Throughput::Bytes(
