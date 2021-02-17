@@ -559,6 +559,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeMap for MapSerializer<'w, W, S> {
     where
         T: ser::Serialize,
     {
+        self.first = false;
         key.serialize(MapKeySerializer {
             writer: self.inner.writer,
         })
