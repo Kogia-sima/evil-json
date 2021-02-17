@@ -15,21 +15,24 @@
 
 ```console
 citm_catalog.json/serde-json
-                        time:   [1.6592 ms 1.6638 ms 1.6690 ms]
-                        thrpt:  [285.87 MiB/s 286.77 MiB/s 287.55 MiB/s]
+                        time:   [1.6274 ms 1.6318 ms 1.6365 ms]
+                        thrpt:  [291.54 MiB/s 292.40 MiB/s 293.18 MiB/s]
 citm_catalog.json/simd-json
-                        time:   [1.2783 ms 1.2811 ms 1.2843 ms]
-                        thrpt:  [371.49 MiB/s 372.44 MiB/s 373.25 MiB/s]
+                        time:   [1.2735 ms 1.2778 ms 1.2830 ms]
+                        thrpt:  [371.44 MiB/s 372.94 MiB/s 374.22 MiB/s]
 citm_catalog.json/evil-json
-                        time:   [672.48 us 674.80 us 677.61 us]
-                        thrpt:  [704.13 MiB/s 707.06 MiB/s 709.50 MiB/s]
+                        time:   [373.71 us 374.81 us 376.17 us]
+                        thrpt:  [1.2386 GiB/s 1.2431 GiB/s 1.2468 GiB/s]
 
-twitter.json/serde-json time:   [1.2504 ms 1.2548 ms 1.2597 ms]
-                        thrpt:  [361.65 MiB/s 363.06 MiB/s 364.34 MiB/s]
-twitter.json/simd-json  time:   [947.01 us 949.58 us 952.45 us]
-                        thrpt:  [478.32 MiB/s 479.77 MiB/s 481.07 MiB/s]
-twitter.json/evil-json  time:   [430.82 us 432.64 us 434.65 us]
-                        thrpt:  [1.0236 GiB/s 1.0283 GiB/s 1.0327 GiB/s]
+twitter.json/serde-json
+                        time:   [1.1918 ms 1.1955 ms 1.1998 ms]
+                        thrpt:  [379.71 MiB/s 381.06 MiB/s 382.25 MiB/s]
+twitter.json/simd-json
+                        time:   [955.47 us 959.51 us 963.87 us]
+                        thrpt:  [472.67 MiB/s 474.82 MiB/s 476.82 MiB/s]
+twitter.json/evil-json
+                        time:   [411.54 us 413.36 us 415.51 us]
+                        thrpt:  [1.0707 GiB/s 1.0763 GiB/s 1.0811 GiB/s]
 ```
 
 ## Author
