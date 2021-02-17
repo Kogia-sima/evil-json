@@ -184,15 +184,6 @@ where
     }
 }
 
-impl<T: fmt::Display> simd_json_derive::Serialize for PrimStr<T> {
-    fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        write!(writer, r#""{}""#, self.0)
-    }
-}
-
 impl<T: fmt::Display> simd_json_derive::SerializeAsKey for PrimStr<T> {
     fn json_write<W>(&self, writer: &mut W) -> std::io::Result<()>
     where

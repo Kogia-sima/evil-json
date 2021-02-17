@@ -1,4 +1,4 @@
-use crate::common::{Color, Empty, PrimStr};
+use crate::common::{Color, Empty};
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -10,8 +10,6 @@ pub struct Twitter {
 
 pub type LongId = u64;
 pub type ShortId = u32;
-pub type LongIdStr = PrimStr<LongId>;
-pub type ShortIdStr = PrimStr<ShortId>;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -20,14 +18,14 @@ pub struct Status {
     pub metadata: Metadata,
     pub created_at: String,
     pub id: LongId,
-    pub id_str: LongIdStr,
+    pub id_str: String,
     pub text: String,
     pub source: String,
     pub truncated: bool,
     pub in_reply_to_status_id: Option<LongId>,
-    pub in_reply_to_status_id_str: Option<LongIdStr>,
+    pub in_reply_to_status_id_str: Option<String>,
     pub in_reply_to_user_id: Option<ShortId>,
-    pub in_reply_to_user_id_str: Option<ShortIdStr>,
+    pub in_reply_to_user_id_str: Option<String>,
     pub in_reply_to_screen_name: Option<String>,
     pub user: User,
     pub geo: (),
@@ -57,7 +55,7 @@ pub struct Metadata {
 #[derive(simd_json_derive::Serialize)]
 pub struct User {
     pub id: ShortId,
-    pub id_str: ShortIdStr,
+    pub id_str: String,
     pub name: String,
     pub screen_name: String,
     pub location: String,
@@ -156,7 +154,7 @@ pub struct UserMention {
     pub screen_name: String,
     pub name: String,
     pub id: ShortId,
-    pub id_str: ShortIdStr,
+    pub id_str: String,
     pub indices: Indices,
 }
 
@@ -165,7 +163,7 @@ pub struct UserMention {
 #[derive(simd_json_derive::Serialize)]
 pub struct Media {
     pub id: LongId,
-    pub id_str: LongIdStr,
+    pub id_str: String,
     pub indices: Indices,
     pub media_url: String,
     pub media_url_https: String,
@@ -176,7 +174,7 @@ pub struct Media {
     pub media_type: String,
     pub sizes: Sizes,
     pub source_status_id: Option<LongId>,
-    pub source_status_id_str: Option<LongIdStr>,
+    pub source_status_id_str: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -206,13 +204,13 @@ pub type Indices = (u8, u8);
 pub struct SearchMetadata {
     pub completed_in: f32,
     pub max_id: LongId,
-    pub max_id_str: LongIdStr,
+    pub max_id_str: String,
     pub next_results: String,
     pub query: String,
     pub refresh_url: String,
     pub count: u8,
     pub since_id: LongId,
-    pub since_id_str: LongIdStr,
+    pub since_id_str: String,
 }
 
 enum_str!(Resize {
