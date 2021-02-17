@@ -512,16 +512,32 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for StructSerializer<'w, W
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         unsafe {
-            self.inner
-                .writer
-                .shrink(MapSuffix::SUFFIX.len() - self.first as usize);
-        }
+            if likely!(MapSuffix::SUFFIX.len() >= S::SUFFIX.len() + 1 && !self.first) {
+                let ptr = self.inner.writer.next_ptr();
+                *ptr.sub(MapSuffix::SUFFIX.len()) = b'}';
+                std::ptr::copy_nonoverlapping(
+                    S::SUFFIX.as_ptr(),
+                    ptr.sub(MapSuffix::SUFFIX.len() - 1),
+                    S::SUFFIX.len(),
+                );
+                self.inner
+                    .writer
+                    .shrink(MapSuffix::SUFFIX.len() - (S::SUFFIX.len() + 1));
+                Ok(())
+            } else {
+                self.inner
+                    .writer
+                    .shrink(MapSuffix::SUFFIX.len() - self.first as usize);
 
-        imap!(self.inner.writer.write2(&RawStr("}"), &RawStr(S::SUFFIX)))
+                imap!(self.inner.writer.write2(&RawStr("}"), &RawStr(S::SUFFIX)))
+            }
+        }
     }
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant for StructSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeStructVariant
+    for StructSerializer<'w, W, S>
+{
     type Ok = ();
     type Error = Error;
 
