@@ -56,6 +56,29 @@ pub unsafe trait BufWrite: io::Write {
             self.advance(offset);
         })
     }
+
+    #[inline]
+    fn write4<T1: SerializeRaw, T2: SerializeRaw, T3: SerializeRaw, T4: SerializeRaw>(
+        &mut self,
+        value1: &T1,
+        value2: &T2,
+        value3: &T3,
+        value4: &T4,
+    ) -> Result<(), io::Error> {
+        let hint = value1
+            .size_hint()
+            .saturating_add(value2.size_hint())
+            .saturating_add(value3.size_hint())
+            .saturating_add(value4.size_hint());
+        self.reserve(hint).map(|_| unsafe {
+            let ptr = self.next_ptr();
+            let mut offset = value1.write_to_ptr(ptr);
+            offset += value2.write_to_ptr(ptr.add(offset));
+            offset += value3.write_to_ptr(ptr.add(offset));
+            offset += value4.write_to_ptr(ptr.add(offset));
+            self.advance(offset);
+        })
+    }
 }
 
 unsafe impl BufWrite for Vec<u8> {
