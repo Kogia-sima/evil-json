@@ -22,7 +22,8 @@ pub(crate) use naive::escape;
 
 #[cfg(all(
     any(target_arch = "x86_64", target_arch = "x86"),
-    target_feature = "avx2"
+    target_feature = "avx2",
+    not(miri)
 ))]
 pub(crate) use avx2::escape;
 
