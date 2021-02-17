@@ -1,5 +1,5 @@
-use serde::ser::{Serialize, Serializer};
 use serde::de::{self, Deserialize, Deserializer, Unexpected};
+use serde::ser::{Serialize, Serializer};
 use std::fmt::{self, Display};
 use std::mem::MaybeUninit;
 use std::ptr;
@@ -262,4 +262,3 @@ macro_rules! enum_str {
         }
     }
 }
-

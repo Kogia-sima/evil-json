@@ -32,7 +32,7 @@ unsafe fn escape_char_impl(dst: *mut u8, c: char) -> usize {
         if likely!(escape == [0, 0]) {
             *dst.add(0) = code as u8;
             1
-        } else  {
+        } else {
             *dst.add(0) = escape[0];
             *dst.add(1) = escape[1];
             if likely!(escape != UU) {

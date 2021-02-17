@@ -165,7 +165,12 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
         if !need_escape(variant) {
-            imap!(self.writer.write4(&RawStr("\""), &RawStr(variant), &RawStr("\""), &RawStr(S::SUFFIX)))
+            imap!(self.writer.write4(
+                &RawStr("\""),
+                &RawStr(variant),
+                &RawStr("\""),
+                &RawStr(S::SUFFIX)
+            ))
         } else {
             self.writer.write_all(b"\"")?;
             match escape_cold(self.writer, variant) {
@@ -213,7 +218,10 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             }
         }
 
-        tri!(value.serialize(&mut Serializer { writer: self.writer, _suffix: PhantomData::<RootSuffix> }));
+        tri!(value.serialize(&mut Serializer {
+            writer: self.writer,
+            _suffix: PhantomData::<RootSuffix>
+        }));
         imap!(self.writer.write2(&RawStr("}"), &RawStr(S::SUFFIX)))
     }
 
@@ -271,8 +279,12 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
                 self.writer
                     .write3(&RawStr("{\""), &RawStr(variant), &RawStr("\":["))?;
             } else {
-                self.writer
-                    .write4(&RawStr("{\""), &RawStr(variant), &RawStr("\":[]}"), &RawStr(S::SUFFIX))?;
+                self.writer.write4(
+                    &RawStr("{\""),
+                    &RawStr(variant),
+                    &RawStr("\":[]}"),
+                    &RawStr(S::SUFFIX),
+                )?;
             }
         } else {
             self.writer.write_all(b"{\"")?;
@@ -441,7 +453,9 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for TupleSerializer<'
     }
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for TupleSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant
+    for TupleSerializer<'w, W, S>
+{
     type Ok = ();
     type Error = Error;
 

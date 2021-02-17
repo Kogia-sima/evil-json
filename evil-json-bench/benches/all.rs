@@ -22,14 +22,14 @@ fn citm_catalog(c: &mut Criterion) {
         serde_json::from_str(citm_catalog_str.as_str()).unwrap();
 
     group.throughput(Throughput::Bytes(
-        serde_json::to_string(&citm_catalog).unwrap().len() as u64
+        serde_json::to_string(&citm_catalog).unwrap().len() as u64,
     ));
     group.bench_function("serde-json", |b| {
         b.iter(|| serde_json::to_string(&citm_catalog))
     });
 
     group.throughput(Throughput::Bytes(
-        simd_json::to_string(&citm_catalog).unwrap().len() as u64
+        simd_json::to_string(&citm_catalog).unwrap().len() as u64,
     ));
     group.bench_function("simd-json", |b| {
         b.iter(|| simd_json::to_string(&citm_catalog))
@@ -43,7 +43,7 @@ fn citm_catalog(c: &mut Criterion) {
     });
 
     group.throughput(Throughput::Bytes(
-        evil_json::to_string(&citm_catalog).unwrap().len() as u64
+        evil_json::to_string(&citm_catalog).unwrap().len() as u64,
     ));
     group.bench_function("evil-json", |b| {
         b.iter(|| evil_json::to_string(&citm_catalog))
@@ -61,32 +61,24 @@ fn twitter(c: &mut Criterion) {
     let twitter: Twitter = serde_json::from_str(twitter_str.as_str()).unwrap();
 
     group.throughput(Throughput::Bytes(
-        serde_json::to_string(&twitter).unwrap().len() as u64
+        serde_json::to_string(&twitter).unwrap().len() as u64,
     ));
-    group.bench_function("serde-json", |b| {
-        b.iter(|| serde_json::to_string(&twitter))
-    });
+    group.bench_function("serde-json", |b| b.iter(|| serde_json::to_string(&twitter)));
 
     group.throughput(Throughput::Bytes(
-        simd_json::to_string(&twitter).unwrap().len() as u64
+        simd_json::to_string(&twitter).unwrap().len() as u64,
     ));
-    group.bench_function("simd-json", |b| {
-        b.iter(|| simd_json::to_string(&twitter))
-    });
+    group.bench_function("simd-json", |b| b.iter(|| simd_json::to_string(&twitter)));
 
     group.throughput(Throughput::Bytes(
         twitter.json_string().unwrap().len() as u64
     ));
-    group.bench_function("simd-json-derive", |b| {
-        b.iter(|| twitter.json_string())
-    });
+    group.bench_function("simd-json-derive", |b| b.iter(|| twitter.json_string()));
 
     group.throughput(Throughput::Bytes(
-        evil_json::to_string(&twitter).unwrap().len() as u64
+        evil_json::to_string(&twitter).unwrap().len() as u64,
     ));
-    group.bench_function("evil-json", |b| {
-        b.iter(|| evil_json::to_string(&twitter))
-    });
+    group.bench_function("evil-json", |b| b.iter(|| evil_json::to_string(&twitter)));
 
     group.finish();
 }
