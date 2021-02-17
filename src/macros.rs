@@ -38,7 +38,9 @@ macro_rules! unlikely {
 #[cfg(evil_json_nightly)]
 macro_rules! assume {
     ($val:expr) => {
-        ::core::intrinsics::assume($val)
+        unsafe {
+            ::core::intrinsics::assume($val)
+        }
     };
 }
 
