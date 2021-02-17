@@ -39,9 +39,9 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     type Ok = ();
     type Error = Error;
     type SerializeSeq = SeqSerializer<'a, W, S>;
-    type SerializeTuple = SeqSerializer<'a, W, S>;
-    type SerializeTupleStruct = SeqSerializer<'a, W, S>;
-    type SerializeTupleVariant = SeqSerializer<'a, W, S>;
+    type SerializeTuple = TupleSerializer<'a, W, S>;
+    type SerializeTupleStruct = TupleSerializer<'a, W, S>;
+    type SerializeTupleVariant = TupleSerializer<'a, W, S>;
     type SerializeMap = MapSerializer<'a, W, S>;
     type SerializeStruct = StructSerializer<'a, W, S>;
     type SerializeStructVariant = StructSerializer<'a, W, S>;
@@ -240,7 +240,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         let first = len == 0;
         self.writer.write_all(b"[")?;
-        Ok(SeqSerializer {
+        Ok(TupleSerializer {
             inner: Serializer::<'a, W, SeqSuffix> {
                 writer: self.writer,
                 _suffix: PhantomData,
@@ -282,7 +282,7 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
             }
         }
 
-        Ok(SeqSerializer {
+        Ok(TupleSerializer {
             inner: Serializer::<'a, W, SeqSuffix> {
                 writer: self.writer,
                 _suffix: PhantomData,
@@ -388,13 +388,13 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
 }
 
 #[doc(hidden)]
-pub struct SeqSerializer<'w, W: BufWrite, S: Suffix> {
+pub struct TupleSerializer<'w, W: BufWrite, S: Suffix> {
     inner: Serializer<'w, W, SeqSuffix>,
     first: bool,
     _suffix: PhantomData<S>,
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for SeqSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for TupleSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
@@ -418,7 +418,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTuple for SeqSerializer<'w, W, S>
     }
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for SeqSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for TupleSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
@@ -437,7 +437,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleStruct for SeqSerializer<'w,
     }
 }
 
-impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for SeqSerializer<'w, W, S> {
+impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for TupleSerializer<'w, W, S> {
     type Ok = ();
     type Error = Error;
 
@@ -453,6 +453,13 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeTupleVariant for SeqSerializer<'w
     fn end(self) -> Result<Self::Ok, Self::Error> {
         <Self as ser::SerializeTuple>::end(self)
     }
+}
+
+#[doc(hidden)]
+pub struct SeqSerializer<'w, W: BufWrite, S: Suffix> {
+    inner: Serializer<'w, W, SeqSuffix>,
+    first: bool,
+    _suffix: PhantomData<S>,
 }
 
 impl<'w, W: BufWrite, S: Suffix> ser::SerializeSeq for SeqSerializer<'w, W, S> {
@@ -468,9 +475,14 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeSeq for SeqSerializer<'w, W, S> {
         value.serialize(&mut self.inner)
     }
 
-    #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        <Self as ser::SerializeTuple>::end(self)
+        if likely!(!self.first) {
+            unsafe {
+                self.inner.writer.shrink(SeqSuffix::SUFFIX.len());
+            }
+        }
+
+        imap!(self.inner.writer.write2(&RawStr("]"), &RawStr(S::SUFFIX)))
     }
 }
 
