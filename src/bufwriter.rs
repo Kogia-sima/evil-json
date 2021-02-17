@@ -95,17 +95,15 @@ unsafe impl<'a> BufWrite for BufWriter<'a> {
 
     #[inline]
     fn reserve(&mut self, additional: usize) -> Result<(), io::Error> {
-        if unlikely!(additional > self.buf.capacity() - self.buf.len()) {
-            if likely!(additional <= self.buf.capacity()) {
-                Vec::reserve(&mut self.buf, additional);
-            } else {
-                // this case should never happen in this crate. all input data
-                // must be shorter than MIN_BUFFER_SIZE.
-                return Err(io::Error::new(io::ErrorKind::Other, "capacity overflow"));
-            }
+        if likely!(additional <= self.buf.capacity() - self.buf.len()) {
+            Ok(())
+        } else if likely!(additional <= self.buf.capacity()) {
+            self.flush_buf()
+        } else {
+            // this case should never happen in this crate. all input data
+            // must be shorter than MIN_BUFFER_SIZE.
+            Err(io::Error::new(io::ErrorKind::Other, "capacity overflow"))
         }
-
-        Ok(())
     }
 
     #[inline]
