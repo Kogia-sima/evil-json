@@ -546,7 +546,7 @@ impl<'w, W: BufWrite, S: Suffix> ser::SerializeStruct for StructSerializer<'w, W
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
         unsafe {
-            if likely!(MapSuffix::SUFFIX.len() >= S::SUFFIX.len() + 1 && !self.first) {
+            if likely!(MapSuffix::SUFFIX.len() > S::SUFFIX.len() && !self.first) {
                 let ptr = self.inner.writer.next_ptr();
                 *ptr.sub(MapSuffix::SUFFIX.len()) = b'}';
                 std::ptr::copy_nonoverlapping(
