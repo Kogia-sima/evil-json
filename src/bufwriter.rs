@@ -72,7 +72,7 @@ impl<'a> Write for BufWriter<'a> {
 
     #[inline]
     fn write_all(&mut self, data: &[u8]) -> io::Result<()> {
-        if data.len() <= self.buf.capacity() - self.buf.len() {
+        if self.buf.len() + data.len() <= self.buf.capacity() {
             unsafe {
                 self.write_to_buf_unchecked(data);
             }
@@ -95,7 +95,9 @@ unsafe impl<'a> BufWrite for BufWriter<'a> {
 
     #[inline]
     fn reserve(&mut self, additional: usize) -> Result<(), io::Error> {
-        if likely!(additional <= self.buf.capacity() - self.buf.len()) {
+        // SAFETY: this operation won't overflow because slice cannot exceeds isize::MAX bytes.
+        // https://doc.rust-lang.org/reference/behavior-considered-undefined.html
+        if likely!(self.buf.len() + additional <= self.buf.capacity()) {
             Ok(())
         } else if likely!(additional <= self.buf.capacity()) {
             self.flush_buf()

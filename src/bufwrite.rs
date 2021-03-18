@@ -89,11 +89,13 @@ unsafe impl BufWrite for Vec<u8> {
 
     #[inline]
     fn reserve(&mut self, additional: usize) -> Result<(), io::Error> {
-        if unlikely!(additional > self.capacity() - self.len()) {
+        // SAFETY: this operation won't overflow because slice cannot exceeds isize::MAX bytes.
+        // https://doc.rust-lang.org/reference/behavior-considered-undefined.html
+        if unlikely!(self.len() + additional > self.capacity()) {
             Vec::reserve(self, additional);
         }
 
-        assume!(additional <= self.capacity() - self.len());
+        assume!(self.len() + additional <= self.capacity());
         Ok(())
     }
 
