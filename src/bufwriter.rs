@@ -124,3 +124,51 @@ impl<'a> Drop for BufWriter<'a> {
         let _ = self.flush_buf();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{BufWriter, MIN_BUFFER_SIZE};
+    use crate::bufwrite::BufWrite;
+    use std::io::Write;
+
+    #[test]
+    fn write() {
+        let inner = Vec::new();
+        let mut writer = BufWriter::with_capacity(2, inner);
+        assert_eq!(writer.buf, &[]);
+        assert_eq!(writer.buf.capacity(), MIN_BUFFER_SIZE);
+
+        writer.write(&[]).unwrap();
+        assert_eq!(writer.buf, &[]);
+        assert_eq!(writer.buf.capacity(), MIN_BUFFER_SIZE);
+
+        writer.write(b"0000").unwrap();
+        assert_eq!(writer.buf, b"0000");
+        assert_eq!(writer.buf.capacity(), MIN_BUFFER_SIZE);
+
+        let remain = writer.buf.capacity() - writer.buf.len();
+        writer.write(b"1".repeat(remain).as_slice()).unwrap();
+        assert_eq!(writer.buf.len(), MIN_BUFFER_SIZE);
+
+        writer.write(b"2").unwrap();
+        assert_eq!(writer.buf, b"2");
+        assert_eq!(writer.buf.capacity(), MIN_BUFFER_SIZE);
+
+        writer.flush().unwrap();
+        assert_eq!(writer.buf, b"");
+        assert_eq!(writer.buf.capacity(), MIN_BUFFER_SIZE);
+    }
+
+    #[test]
+    fn reserve() {
+        let inner = Vec::new();
+        let mut writer = BufWriter::with_capacity(MIN_BUFFER_SIZE + 1, inner);
+
+        assert_eq!(writer.reserve(MIN_BUFFER_SIZE + 1).ok(), Some(()));
+        assert_eq!(writer.reserve(MIN_BUFFER_SIZE + 2).ok(), None);
+
+        writer.write(b"@").unwrap();
+        assert_eq!(writer.reserve(MIN_BUFFER_SIZE + 1).ok(), Some(()));
+        assert_eq!(writer.buf, b"");
+    }
+}
