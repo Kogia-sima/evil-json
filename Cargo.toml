@@ -1,6 +1,6 @@
 [package]
 name = "evil-json"
-version = "0.1.0"
+version = "0.1.0-alpha.0"
 authors = ["Ryohei Machida <orcinus4627@gmail.com>"]
 description = "Experimental JSON serializer"
 homepage = "https://github.com/Kogia-sima/evil-json"
