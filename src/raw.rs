@@ -1,5 +1,3 @@
-use crate::float::{FiniteF32, FiniteF64, FiniteFloat};
-
 use itoap::Integer;
 use std::ptr::copy_nonoverlapping;
 
@@ -63,22 +61,36 @@ macro_rules! impl_integers {
 
 impl_integers!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
 
-macro_rules! impl_floating_points {
-    ($($type:ty),*) => {
-        $(
-            impl SerializeRaw for $type {
-                #[inline]
-                fn size_hint(&self) -> usize {
-                    <$type as FiniteFloat>::MAX_LEN
-                }
+impl SerializeRaw for f32 {
+    #[inline]
+    fn size_hint(&self) -> usize {
+        16
+    }
 
-                #[inline]
-                unsafe fn write_to_ptr(&self, dst: *mut u8) -> usize {
-                    <$type as FiniteFloat>::write_to(*self, dst)
-                }
-            }
-        )*
-    };
+    #[inline]
+    unsafe fn write_to_ptr(&self, dst: *mut u8) -> usize {
+        if self.is_finite() {
+            ryu::raw::format32(*self, dst)
+        } else {
+            copy_nonoverlapping(b"null".as_ptr(), dst, 4);
+            4
+        }
+    }
 }
 
-impl_floating_points!(FiniteF32, FiniteF64);
+impl SerializeRaw for f64 {
+    #[inline]
+    fn size_hint(&self) -> usize {
+        32
+    }
+
+    #[inline]
+    unsafe fn write_to_ptr(&self, dst: *mut u8) -> usize  {
+        if self.is_finite() {
+            ryu::raw::format64(*self, dst)
+        } else {
+            copy_nonoverlapping(b"null".as_ptr(), dst, 4);
+            4
+        }
+    }
+}

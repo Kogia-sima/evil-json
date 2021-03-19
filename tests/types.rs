@@ -1,5 +1,3 @@
-use evil_json::Error;
-
 fn to_json<T: serde::Serialize + ?Sized>(value: &T) -> String {
     evil_json::to_string(value).unwrap()
 }
@@ -31,14 +29,8 @@ fn float() {
     assert_eq!(to_json(&3.14f32), "3.14");
     assert_eq!(to_json(&-0.0), "-0.0");
     assert_eq!(to_json(&2.718281828459045), "2.718281828459045");
-    assert!(matches!(
-        evil_json::to_string(&f32::INFINITY),
-        Err(Error::NonFiniteFloat)
-    ));
-    assert!(matches!(
-        evil_json::to_string(&f64::INFINITY),
-        Err(Error::NonFiniteFloat)
-    ));
+    assert_eq!(to_json(&f32::INFINITY), "null");
+    assert_eq!(to_json(&f64::INFINITY), "null");
 }
 
 #[test]

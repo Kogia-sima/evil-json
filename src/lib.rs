@@ -9,7 +9,6 @@ mod bufwrite;
 mod bufwriter;
 mod error;
 mod escape;
-mod float;
 mod raw;
 mod ser;
 mod suffix;

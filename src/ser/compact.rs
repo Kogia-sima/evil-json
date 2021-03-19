@@ -1,6 +1,5 @@
 use crate::error::Error;
 use crate::escape::{escape, escape_cold, need_escape};
-use crate::float::{FiniteF32, FiniteF64};
 use crate::raw::RawStr;
 use crate::suffix::{MapSuffix, RootSuffix, SeqSuffix, Suffix};
 use crate::{bufwrite::BufWrite, escape::escape_char};
@@ -101,13 +100,11 @@ impl<'a, 'w: 'a, W: BufWrite, S: Suffix> ser::Serializer
 
     #[inline]
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        let v = tri!(FiniteF32::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
     #[inline]
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        let v = tri!(FiniteF64::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr(S::SUFFIX)))
     }
 
@@ -700,12 +697,10 @@ impl<'w, W: BufWrite> ser::Serializer for MapKeySerializer<'w, W> {
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        let v = tri!(FiniteF32::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr("\":")))
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        let v = tri!(FiniteF64::new(v).ok_or(Error::NonFiniteFloat));
         imap!(self.writer.write2(&v, &RawStr("\":")))
     }
 
