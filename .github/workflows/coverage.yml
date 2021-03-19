@@ -32,10 +32,10 @@ jobs:
           CARGO_INCREMENTAL: 0
           RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -C panic=abort -Ctarget-cpu=native
           RUSTDOCFLAGS: -C panic=abort
-        run: cargo test --all-features
+        run: cargo test --all-features --target-dir target-simd
       - name: collect coverages
         run: |
-          zip -0 ccov.zip `find . \( -name "evil_json*.gc*" -o -name "test-*.gc*" \) -print`
+          zip -0 ccov.zip `find . -name "*.gc*" -print |grep -v version_check`
           ./grcov ccov.zip -s . --llvm -t lcov -o lcov.info --ignore "/*" --ignore "tests/*"
       - name: fix coverages
         run: ./rust-covfix -o lcov.info lcov.info
